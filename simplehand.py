@@ -40,7 +40,7 @@ class Hand:
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(111, projection='3d')
         
-    def draw(self, idx_flexion, mrs_flexion, thumb_flexion):
+    def draw(self, idx_flexion=0, mrs_flexion=0, thumb_flexion=0):
 
         def rotate_xz(pos, angle):
             length = np.linalg.norm(pos)

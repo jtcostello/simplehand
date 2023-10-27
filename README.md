@@ -18,3 +18,9 @@ or if you want to keep it editable
 pip install -e .
 ```
 
+#### Plot a hand:
+```python
+from simple_mpl_hand import Hand
+hand = Hand()
+hand.draw(idx_flexion=0, mrs_flexion=0.5, thumb_flexion=1.0)
+```
