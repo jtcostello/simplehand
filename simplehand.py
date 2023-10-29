@@ -1,8 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import copy
+from hand_structure import hand_structure
 
-class Hand:
+
+class SuperSimpleHand:
+    """V1 of the hand - a single line to represent each finger"""
     def __init__(self):
         # Define the initial positions of the points
         self.positions = {
@@ -95,4 +99,189 @@ class Hand:
         self.ax.set_zlim([-3, 3])
         self.ax.view_init(45, -45)
         self.ax.set_axis_off()
+
+
+class SimpleHand:
+    """V2 of the hand - multiple joints per finger"""
+    def __init__(self, fig=None, ax=None):
+        self.base_structure = hand_structure
+        self.hand_structure = copy.deepcopy(self.base_structure)
+        if fig is None or ax is None:
+            self.fig = plt.figure()
+            self.ax = self.fig.add_subplot(111, projection='3d')
+        else:
+            self.fig = fig
+            self.ax = ax
+
+    def _rotate_point(self, point_pos, parent_pos, axis, degrees):
+        # Convert degrees to radians
+        theta = -1 * np.radians(degrees)
+
+        # Make the rotation axis a unit vector
+        k = np.array(axis) / np.linalg.norm(axis)
+
+        # Translate point to origin (relative to parent_pos)
+        v = point_pos - parent_pos
+
+        # Apply Rodrigues' rotation formula
+        v_rot = v * np.cos(theta) + np.cross(k, v) * np.sin(theta) + k * np.dot(k, v) * (1 - np.cos(theta))
+
+        # Translate point back to its relative position
+        return v_rot + parent_pos
+
+    def _update_position(self, node, parent_node, tendon_flexion_values):
+        """Recursively update the position of each node in the hand model.
+        Points rotate about the parent node's position.
+
+        Note: if we don't keep track of the original position of each node, the hand will get distorted
+        since the calculated distance between nodes will change as the hand flexes. To solve this, we rotate
+        each node about the parent's original position, then adjust for the change in parent's position.
+        """
+        current_pos = np.array(node["pos"])
+        node["orig_pos"] = copy.deepcopy(node["pos"])
+        if parent_node is not None:
+            tendon_name = parent_node["tendon"]
+            if tendon_name:
+                flexion_value = tendon_flexion_values[tendon_name]
+                rotation_angle = flexion_value * parent_node["max_angle"] + parent_node["angle"]
+                new_pos = self._rotate_point(current_pos, np.array(parent_node["orig_pos"]), parent_node["rot_axis"],
+                                       rotation_angle)
+                new_pos = new_pos + np.array(parent_node["pos"]) - np.array(parent_node["orig_pos"])
+                node["pos"] = list(new_pos)
+                node["angle"] = rotation_angle
+
+        for child_name, child_node in node["children"].items():
+            self._update_position(child_node, node, tendon_flexion_values)
+
+    def set_flex(self, th=0, idx=0, mid=0, ri=0, pi=0):
+        """Set the positions of each node in the hand model based on the tendon flexion values.
+        Flexions should be 0 to 1"""
+        self.hand_structure = copy.deepcopy(self.base_structure)
+        wr = 0          # TODO: wrist rotation doesn't work yet
+        flex_vals_dict = {
+            "wrist": wr,
+            "thumb": th,
+            "index": idx,
+            "middle": mid,
+            "ring": ri,
+            "pinky": pi
+        }
+        # self.hand_structure['arm']['orig_pos'] = self.hand_structure['arm']['pos']
+        self._update_position(self.hand_structure['arm'], None, flex_vals_dict)
+
+    def draw(self, draw_floor=False):
+        """Recursively plot the hand model using matplotlib."""
+        def plot_node_and_edges(ax, node, parent_pos):
+            current_pos = np.array(node["pos"])
+            ax.scatter(*current_pos, color='blue', s=50)
+            if parent_pos is not None:
+                ax.plot3D(*zip(parent_pos, current_pos), color='black')
+            for child_node in node["children"].values():
+                plot_node_and_edges(ax, child_node, current_pos)
+
+        # Draw a dark plane as the "floor"
+        if draw_floor:
+            w, l = 2, 2
+            center = np.array([0, 0, -1])
+            xx, yy = np.meshgrid([-w+center[0], w+center[0]], [-l+center[1], l+center[1]])
+            zz = np.zeros(xx.shape) + center[2]
+            self.ax.plot_surface(xx, yy, zz, color='k', alpha=0.3)
+
+        # Draw hand
+        node = self.hand_structure["arm"]
+        plot_node_and_edges(self.ax, node, None)
+
+        # set view
+        # ax.set_xlim3d(-2, 2)
+        # ax.set_ylim3d(-2, 2)
+        # ax.set_zlim3d(-2, 2)
+        ax.set_xlim3d(-1.5, 1.5)
+        ax.set_ylim3d(-1.5, 1.5)
+        ax.set_zlim3d(-1.5, 1.5)
+        ax.view_init(30, -130)
+        ax.set_axis_off()
+
+
+if __name__ == "__main__":
+    # hand = SimpleHand()
+    # hand.draw()
+    # plt.show()
+
+
+    # # create animation
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # hand = SimpleHand(fig, ax)
+    # hand.draw()
+    # def animate(i):
+    #     hand.ax.clear()
+    #     hand.set_flex(idx=i/20.0, mid=i/20.0, ri=i/20.0, pi=i/20.0)
+    #     hand.draw()
+    #     return hand.ax
+    #
+    # from matplotlib.animation import FuncAnimation
+    # anim = FuncAnimation(fig, animate, frames=range(0, 20), interval=200)
+    #
+    # anim.save('handtest.gif', writer='imagemagick')
+
+
+    # create animation
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    hand = SimpleHand(fig, ax)
+    hand.draw()
+    def animate(i):
+        hand.ax.clear()
+        hand.set_flex(idx=max(min((i-6)/30.0, 1), 0),
+                      mid=max(min((i-4)/30.0, 1), 0),
+                      ri=max(min((i-2)/30.0, 1), 0),
+                      pi=max(min((i-0)/30.0, 1), 0),
+                      th=max(min((i-8)/30.0, 1), 0),)
+        hand.draw()
+        return hand.ax
+
+    from matplotlib.animation import FuncAnimation
+    anim = FuncAnimation(fig, animate, frames=range(0, 40), interval=100)
+
+    anim.save('hand_v2.gif', writer='imagemagick')
+
+
+
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # hand = SimpleHand(fig, ax)
+    # # hand.set_flex(idx=0.5, mid=0.5, ri=0.5, pi=0.5)
+    # hand.draw()
+    # # make axes square
+    # # ax.set_xlim3d(-3, 3)
+    # # ax.set_ylim3d(-3, 3)
+    # # ax.set_zlim3d(-3, 3)
+    #
+    # # set the  x y z lables
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    #
+    # plt.show()
+    # #
+    # # fig = plt.figure()
+    # # ax = fig.add_subplot(111, projection='3d')
+    # # hand1 = SimpleHand(fig, ax)
+    # # hand1.draw()
+    # # hand2 = SimpleHand(fig, ax)
+    # # hand2.set_flex(th=0.2, idx=0.8, mid=0.6, ri=0.4, pi=0.2)
+    # # hand2.draw()
+    # #
+    # #
+    # # # make axes square
+    # # ax.set_xlim3d(-3, 3)
+    # # ax.set_ylim3d(-3, 3)
+    # # ax.set_zlim3d(-3, 3)
+    # # plt.show()
+
+
+
+
+
+
 
