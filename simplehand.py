@@ -192,96 +192,15 @@ class SimpleHand:
         plot_node_and_edges(self.ax, node, None)
 
         # set view
-        # ax.set_xlim3d(-2, 2)
-        # ax.set_ylim3d(-2, 2)
-        # ax.set_zlim3d(-2, 2)
-        ax.set_xlim3d(-1.5, 1.5)
-        ax.set_ylim3d(-1.5, 1.5)
-        ax.set_zlim3d(-1.5, 1.5)
-        ax.view_init(30, -130)
-        ax.set_axis_off()
+        self.ax.set_xlim3d(-1.5, 1.5)
+        self.ax.set_ylim3d(-1.5, 1.5)
+        self.ax.set_zlim3d(-1.5, 1.5)
+        self.ax.view_init(30, -130)
+        self.ax.set_axis_off()
 
 
 if __name__ == "__main__":
-    # hand = SimpleHand()
-    # hand.draw()
-    # plt.show()
-
-
-    # # create animation
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
-    # hand = SimpleHand(fig, ax)
-    # hand.draw()
-    # def animate(i):
-    #     hand.ax.clear()
-    #     hand.set_flex(idx=i/20.0, mid=i/20.0, ri=i/20.0, pi=i/20.0)
-    #     hand.draw()
-    #     return hand.ax
-    #
-    # from matplotlib.animation import FuncAnimation
-    # anim = FuncAnimation(fig, animate, frames=range(0, 20), interval=200)
-    #
-    # anim.save('handtest.gif', writer='imagemagick')
-
-
-    # create animation
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    hand = SimpleHand(fig, ax)
+    hand = SimpleHand()
     hand.draw()
-    def animate(i):
-        hand.ax.clear()
-        hand.set_flex(idx=max(min((i-6)/30.0, 1), 0),
-                      mid=max(min((i-4)/30.0, 1), 0),
-                      ri=max(min((i-2)/30.0, 1), 0),
-                      pi=max(min((i-0)/30.0, 1), 0),
-                      th=max(min((i-8)/30.0, 1), 0),)
-        hand.draw()
-        return hand.ax
-
-    from matplotlib.animation import FuncAnimation
-    anim = FuncAnimation(fig, animate, frames=range(0, 40), interval=100)
-
-    anim.save('hand_v2.gif', writer='imagemagick')
-
-
-
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
-    # hand = SimpleHand(fig, ax)
-    # # hand.set_flex(idx=0.5, mid=0.5, ri=0.5, pi=0.5)
-    # hand.draw()
-    # # make axes square
-    # # ax.set_xlim3d(-3, 3)
-    # # ax.set_ylim3d(-3, 3)
-    # # ax.set_zlim3d(-3, 3)
-    #
-    # # set the  x y z lables
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-    #
-    # plt.show()
-    # #
-    # # fig = plt.figure()
-    # # ax = fig.add_subplot(111, projection='3d')
-    # # hand1 = SimpleHand(fig, ax)
-    # # hand1.draw()
-    # # hand2 = SimpleHand(fig, ax)
-    # # hand2.set_flex(th=0.2, idx=0.8, mid=0.6, ri=0.4, pi=0.2)
-    # # hand2.draw()
-    # #
-    # #
-    # # # make axes square
-    # # ax.set_xlim3d(-3, 3)
-    # # ax.set_ylim3d(-3, 3)
-    # # ax.set_zlim3d(-3, 3)
-    # # plt.show()
-
-
-
-
-
-
+    plt.show()
 
