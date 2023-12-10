@@ -1,4 +1,4 @@
-# simple-mpl-hand
+# Simple Hand
 
 I wanted a simple 3D hand model to visualize hand movements in python without the need for external models or software, so I built this.
 It simply plots a wireframe hand in matplotlib and allows you to set the flexion of each finger.
