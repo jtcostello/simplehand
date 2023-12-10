@@ -1,9 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import copy
-from hand_structure import hand_structure
-
+from simplehand.hand_structure import hand_structure
 
 class SuperSimpleHand:
     """V1 of the hand - a single line to represent each finger"""
