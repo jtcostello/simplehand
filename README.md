@@ -29,8 +29,6 @@ plt.show()
 #### Installation:
 
 ```
-git clone https://github.com/jtcostello/simple-mpl-hand.git
-cd simple-mpl-hand
-pip install .
+pip install simplehand
 ```
 
