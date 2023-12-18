@@ -19,7 +19,7 @@ hand_structure = {
                         "pos": [0, -0.25, 0],
                         "tendon": "thumb",
                         "rot_axis": [1, 0, 0],
-                        "max_angle": 45,
+                        "max_angle": 90,
                         "angle": 0,
 
                         "children": {
